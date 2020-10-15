@@ -26,7 +26,7 @@ class Session(object):
         """Docstring"""
         
         date = datetime.datetime.now()
-        date_str = date.strftime('%Y%m%d%M%S')[2:]
+        date_str = date.strftime('%Y%m%d%H%M%S')[2:]
         self.SID = int(date_str)
 
     def update(self, sessionUID):
@@ -147,7 +147,7 @@ class PacketParser(object):
             pass
 
         elif packetId == PacketID.CAR_TELEMETRY.value:
-            pass
+            self._parse_telemetry(packet)
         
         elif packetId == PacketID.CAR_STATUS.value:
             pass
@@ -178,7 +178,8 @@ class PacketParser(object):
             entries = self.get_rows(
                 packet, 
                 EntryFields.SESSIONS, 
-                prepend=(TableID.SESSION.value, self.sess.SID))
+                prepend=(TableID.SESSION.value, self.sess.SID, str(self.sess.UID)))
+            # entries[0][2] = str(entries[0][2]) # Hacky way to resolve large integer problem
             self.stage_entries(entries)
             
             self._prev_id['session'] = packet.header.sessionUID
@@ -222,4 +223,14 @@ class PacketParser(object):
             packet, 
             EntryFields.LAPDATA, 
             prepend=(TableID.LAPDATA.value, self.sess.pID))
+        self.stage_entries(entries)
+        
+    def _parse_telemetry(self, packet):
+        """docstring"""
+        
+        # Get entries for LAPDATA table
+        entries = self.get_rows(
+            packet, 
+            EntryFields.TELEMETRY, 
+            prepend=(TableID.TELEMETRY.value, self.sess.pID))
         self.stage_entries(entries)

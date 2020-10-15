@@ -12,6 +12,25 @@ class TableID(IntEnum):
     MARSHALS = 12
     LAPDATA = 20
     PARTICIPANTS = 40
+    TELEMETRY = 60
+
+SessionType = {
+    0: 'unknown',
+    1: 'Practice 1',
+    2: 'Practice 2',
+    3: 'Practice 3',
+    4: 'Short Practice',
+    5: 'Qualy 1',
+    6: 'Qualy 2',
+    7: 'Qualy 3',
+    8: 'Short Qualy',
+    9: 'One Shot Qualy',
+    10: 'Race',
+    11: 'Race 2',
+    12: 'Time Trial'
+}
+    
+    
     
 # Drivers
 DriverIDs = {

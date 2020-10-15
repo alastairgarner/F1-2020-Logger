@@ -9,6 +9,7 @@ import pickle
 import time
 import datetime
 import os
+import ctypes
 
 import threading
 from queue import Queue
@@ -21,7 +22,7 @@ from f1_2020_db import DbHandler, PacketParser, Session
                    
 #################
 ### SETUP
-os.remove("f1-2020.sqlite3")
+os.remove("test.sqlite3")
 
 with open('packets.dictionary', 'rb') as file:
     # Read & print the entire file
@@ -36,9 +37,9 @@ db_queue = Queue()
 session = Session()
 
 pp = PacketParser(db_queue, session)
-db = DbHandler("f1-2020.sqlite3",db_queue)
+db = DbHandler("test.sqlite3",db_queue)
 
-session.get_last_session("f1-2020.sqlite3")
+session.get_last_session("test.sqlite3")
 
 # Determine what the sessionSID should be
 db.start()
@@ -46,11 +47,8 @@ db.start()
 for packet in packets:
     pp.parse_packet(packet, restrict=False)
     # time.sleep(1/1000)
+
     
 time.sleep(2)
 db.close()
-
-
-
-
 

@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import sqlite3
+import ctypes
 import time
 import threading
 from queue import Queue
@@ -74,6 +75,7 @@ class DbHandler(threading.Thread):
             self.commit(Query.INSERT_INTO_PACKETS, self._entries[TableID.PACKETS])
             self.commit(Query.INSERT_INTO_PARTICIPANTS, self._entries[TableID.PARTICIPANTS])
             self.commit(Query.INSERT_INTO_LAPDATA, self._entries[TableID.LAPDATA])
+            self.commit(Query.INSERT_INTO_TELEMETRY, self._entries[TableID.TELEMETRY])
             
         print(f'Committed {num_entries} packets in {time.time()-start} seconds')
         
@@ -131,6 +133,8 @@ class SQLiteConnect(object):
 
         self.conn = None
         self.cursor = None
+        
+        self.setup_array_types()
 
         # Check tables exist - create them if not
         tables = self.select(Query.CHECK_TABLES)
@@ -141,7 +145,26 @@ class SQLiteConnect(object):
             self.close()
     
             print(f'Created {filename} file.')
+            
+    def setup_array_types(self):
+        def adapt_float_array(array):
+            return '{:.2f} {:.2f} {:.2f} {:.2f}'.format(*array).encode('ascii')
 
+        def adapt_int_array(array):
+            return '{:d} {:d} {:d} {:d}'.format(*array).encode('ascii')
+
+        def convert_float_array(string):
+            return list(map(float,string.split(b" ")))
+
+        def convert_int_array(string):
+            return list(map(int,string.split(b" ")))
+
+        sqlite3.register_adapter(ctypes.c_uint8 * 4, adapt_int_array)
+        sqlite3.register_adapter(ctypes.c_uint16 * 4, adapt_int_array)
+        sqlite3.register_converter('int_array', convert_int_array)
+
+        sqlite3.register_adapter(ctypes.c_float * 4, adapt_float_array)
+        sqlite3.register_converter('float_array', convert_float_array)
 
     def open(self):
         """Connect to SQLite database"""
@@ -150,7 +173,7 @@ class SQLiteConnect(object):
             print('Connection already established.')
             return
         
-        self.conn = sqlite3.connect(self.file)
+        self.conn = sqlite3.connect(self.file, detect_types=sqlite3.PARSE_DECLTYPES)
         self.cursor = self.conn.cursor()
 
         print(f'Connected to {self.file}.')
@@ -228,7 +251,7 @@ class EntryFields(object):
         'header': ['packetId', 'frameIdentifier', 'sessionTime', 'packetVersion']
     }
     SESSIONS = {
-        'header': ['sessionUID', 'packetFormat','gameMajorVersion', 'gameMinorVersion', 'playerCarIndex', 'secondaryPlayerCarIndex'],
+        'header': ['packetFormat','gameMajorVersion', 'gameMinorVersion', 'playerCarIndex', 'secondaryPlayerCarIndex'],
         'packet': ["totalLaps", "trackLength", "sessionType", "trackId", "formula", "networkGame", "sessionDuration",
                    "sliProNativeSupport",'isSpectating','spectatorCarIndex']
     }
@@ -240,7 +263,11 @@ class EntryFields(object):
         'lapData': ['sector1TimeInMS','sector2TimeInMS','currentLapTime','lapDistance','totalDistance','safetyCarDelta',
                     'carPosition','currentLapNum','pitStatus','sector','currentLapInvalid','driverStatus','resultStatus']
     }
-    
+    TELEMETRY = {
+        'carTelemetryData': ['speed', 'throttle', 'brake', 'clutch', 'gear',
+                             'engineRPM', 'drs', 'revLightsPercent', 'brakesTemperature',
+                             'tyresSurfaceTemperature', 'tyresInnerTemperature', 'engineTemperature', 'tyresPressure', 'surfaceType']
+    }
     #####
     TIME = {
         'packet': ["sessionTimeLeft", "gamePaused"]
@@ -257,6 +284,7 @@ class EntryFields(object):
         'marshalZones': ['zoneStart', 'zoneFlag']
     }
     
+    
 
 def format_fields(dictionary:dict) -> str:
     fields = [val for k,vals in dictionary.items() for val in vals]
@@ -272,7 +300,7 @@ class Query(object):
     CREATE_TABLE_SESSION = """
         CREATE TABLE IF NOT EXISTS session (
             sessionSID              INTEGER     NOT NULL,
-            sessionUID              INTEGER     NOT NULL,
+            sessionUID              TEXT     NOT NULL,
             sessionType             INTEGER     NOT NULL,
             trackId                 INTEGER     NOT NULL,
             trackLength             INTEGER     NOT NULL,
@@ -337,6 +365,27 @@ class Query(object):
             PRIMARY KEY (packetUID, vehicleID)
         );
     """
+    CREATE_TABLE_TELEMETRY = """
+        CREATE TABLE IF NOT EXISTS telemetry (
+            packetUID INTEGER NOT NULL,
+            vehicleID INTEGER NOT NULL,
+            speed FLOAT NOT NULL,
+            throttle FLOAT NOT NULL,
+            brake FLOAT NOT NULL,
+            clutch INTEGER NOT NULL,
+            gear INTEGER NOT NULL,
+            engineRPM FLOAT NOT NULL,
+            drs INTEGER NOT NULL,
+            revLightsPercent FLOAT NOT NULL,
+            brakesTemperature INT_ARRAY NOT NULL,
+            tyresSurfaceTemperature INT_ARRAY NOT NULL,
+            tyresInnerTemperature INT_ARRAY NOT NULL,
+            engineTemperature INT_ARRAY NOT NULL,
+            tyresPressure FLOAT_ARRAY NOT NULL,
+            surfaceType INT_ARRAY NOT NULL,
+            PRIMARY KEY (packetUID, vehicleID)
+        );
+    """
     # CREATE STATEMENTS - Static tables
     CREATE_TABLE_DRIVERS = """
         CREATE TABLE IF NOT EXISTS drivers (
@@ -394,8 +443,8 @@ class Query(object):
     """
     # INSERT STATEMENTS - Streamed tables
     INSERT_INTO_SESSION = """
-        INSERT INTO session (sessionSID, {})
-        VALUES (?, {})
+        INSERT INTO session (sessionSID, sessionUID, {})
+        VALUES (?, ?, {})
     """ .format(*format_fields(EntryFields.SESSIONS))
 
     INSERT_INTO_PACKETS = """
@@ -412,6 +461,11 @@ class Query(object):
         INSERT INTO lapdata (packetUID, vehicleID, {}) 
         VALUES (?, ?, {});
     """.format(*format_fields(EntryFields.LAPDATA))
+    
+    INSERT_INTO_TELEMETRY = """
+        INSERT INTO telemetry (packetUID, vehicleID, {}) 
+        VALUES (?, ?, {});
+    """.format(*format_fields(EntryFields.TELEMETRY))
     
     # SELECT STATEMENTS
     PULL_SESSIONS = "SELECT sessionSID,sessionUID FROM session;"
