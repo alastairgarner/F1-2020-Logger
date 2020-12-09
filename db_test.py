@@ -4,6 +4,7 @@
 # Load Dependencies
 ################################################
 
+from f1_2020_db.types import TableID
 import sqlite3
 import pickle
 import time
@@ -17,9 +18,8 @@ from queue import Queue
 from f1_2020_telemetry.packets import unpack_udp_packet
 from f1_2020_db import DbHandler, PacketParser, Session
 
+from f1_2020_telemetry.packets import PacketLapData_V1
 
-            
-                   
 #################
 ### SETUP
 os.remove("test.sqlite3")
@@ -51,4 +51,14 @@ for packet in packets:
     
 time.sleep(2)
 db.close()
+
+
+################################################
+
+filename = "./sqlite-dbs/F1_2019_39fe9b4cab4f9dc2.sqlite3"
+
+conn = sqlite3.connect(filename)
+cur = conn.execute("SELECT * FROM packets")
+cur.qsize()
+
 

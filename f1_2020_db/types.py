@@ -11,6 +11,7 @@ class TableID(IntEnum):
     WEATHER = 11
     MARSHALS = 12
     LAPDATA = 20
+    LAPTIMES = 21
     PARTICIPANTS = 40
     TELEMETRY = 60
 
@@ -20,11 +21,11 @@ SessionType = {
     2: 'Practice 2',
     3: 'Practice 3',
     4: 'Short Practice',
-    5: 'Qualy 1',
-    6: 'Qualy 2',
-    7: 'Qualy 3',
-    8: 'Short Qualy',
-    9: 'One Shot Qualy',
+    5: 'Quali 1',
+    6: 'Quali 2',
+    7: 'Quali 3',
+    8: 'Short Quali',
+    9: 'One Shot Quali',
     10: 'Race',
     11: 'Race 2',
     12: 'Time Trial'

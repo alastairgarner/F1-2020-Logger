@@ -75,6 +75,7 @@ class DbHandler(threading.Thread):
             self.commit(Query.INSERT_INTO_PACKETS, self._entries[TableID.PACKETS])
             self.commit(Query.INSERT_INTO_PARTICIPANTS, self._entries[TableID.PARTICIPANTS])
             self.commit(Query.INSERT_INTO_LAPDATA, self._entries[TableID.LAPDATA])
+            self.commit(Query.INSERT_INTO_LAPTIMES, self._entries[TableID.LAPTIMES])
             self.commit(Query.INSERT_INTO_TELEMETRY, self._entries[TableID.TELEMETRY])
             
         print(f'Committed {num_entries} packets in {time.time()-start} seconds')
@@ -114,6 +115,12 @@ class DbHandler(threading.Thread):
         self._cursor.executemany(self._insert_into_lapdata, list_entries)
         self._conn.commit()
 
+    def _commit_laptimes(self, list_entries):
+        """ """
+        
+        self._cursor.executemany(self._insert_into_lapdata, list_entries)
+        self._conn.commit()
+
     def _commit_packets(self, list_entries):
         """ """
         
@@ -134,7 +141,7 @@ class SQLiteConnect(object):
         self.conn = None
         self.cursor = None
         
-        self.setup_array_types()
+        setup_sqlite_types()
 
         # Check tables exist - create them if not
         tables = self.select(Query.CHECK_TABLES)
@@ -145,26 +152,6 @@ class SQLiteConnect(object):
             self.close()
     
             print(f'Created {filename} file.')
-            
-    def setup_array_types(self):
-        def adapt_float_array(array):
-            return '{:.2f} {:.2f} {:.2f} {:.2f}'.format(*array).encode('ascii')
-
-        def adapt_int_array(array):
-            return '{:d} {:d} {:d} {:d}'.format(*array).encode('ascii')
-
-        def convert_float_array(string):
-            return list(map(float,string.split(b" ")))
-
-        def convert_int_array(string):
-            return list(map(int,string.split(b" ")))
-
-        sqlite3.register_adapter(ctypes.c_uint8 * 4, adapt_int_array)
-        sqlite3.register_adapter(ctypes.c_uint16 * 4, adapt_int_array)
-        sqlite3.register_converter('int_array', convert_int_array)
-
-        sqlite3.register_adapter(ctypes.c_float * 4, adapt_float_array)
-        sqlite3.register_converter('float_array', convert_float_array)
 
     def open(self):
         """Connect to SQLite database"""
@@ -262,6 +249,9 @@ class EntryFields(object):
     LAPDATA = {
         'lapData': ['sector1TimeInMS','sector2TimeInMS','currentLapTime','lapDistance','totalDistance','safetyCarDelta',
                     'carPosition','currentLapNum','pitStatus','sector','currentLapInvalid','driverStatus','resultStatus']
+    }
+    LAPTIMES = {
+        'lapData': ['currentLapNum', 'lastLapTime']
     }
     TELEMETRY = {
         'carTelemetryData': ['speed', 'throttle', 'brake', 'clutch', 'gear',
@@ -365,6 +355,15 @@ class Query(object):
             PRIMARY KEY (packetUID, vehicleID)
         );
     """
+    CREATE_TABLE_LAPTIMES = """
+        CREATE TABLE IF NOT EXISTS laptimes (
+            packetUID               INTEGER     NOT NULL,
+            vehicleID               INTEGER     NOT NULL,
+            currentLapNum           INTEGER     NOT NULL,
+            lastLapTime             FLOAT       NOT NULL,
+            PRIMARY KEY (packetUID, vehicleID)
+        );
+    """
     CREATE_TABLE_TELEMETRY = """
         CREATE TABLE IF NOT EXISTS telemetry (
             packetUID INTEGER NOT NULL,
@@ -443,7 +442,7 @@ class Query(object):
     """
     # INSERT STATEMENTS - Streamed tables
     INSERT_INTO_SESSION = """
-        INSERT INTO session (sessionSID, sessionUID, {})
+        INSERT OR IGNORE INTO session (sessionSID, sessionUID, {})
         VALUES (?, ?, {})
     """ .format(*format_fields(EntryFields.SESSIONS))
 
@@ -453,7 +452,7 @@ class Query(object):
     """.format(*format_fields(EntryFields.PACKETS)) 
 
     INSERT_INTO_PARTICIPANTS = """
-        INSERT INTO participants (sessionSID, vehicleID, {}) 
+        INSERT OR IGNORE INTO participants (sessionSID, vehicleID, {}) 
         VALUES (?, ?, {});
     """.format(*format_fields(EntryFields.PARTICIPANTS))
     
@@ -461,7 +460,12 @@ class Query(object):
         INSERT INTO lapdata (packetUID, vehicleID, {}) 
         VALUES (?, ?, {});
     """.format(*format_fields(EntryFields.LAPDATA))
-    
+
+    INSERT_INTO_LAPTIMES = """
+        INSERT INTO laptimes (packetUID, vehicleID, {}) 
+        VALUES (?, ?, {});
+    """.format(*format_fields(EntryFields.LAPTIMES))
+
     INSERT_INTO_TELEMETRY = """
         INSERT INTO telemetry (packetUID, vehicleID, {}) 
         VALUES (?, ?, {});
@@ -472,6 +476,26 @@ class Query(object):
     
     CHECK_TABLES = 'SELECT name FROM sqlite_master WHERE type= "table"'
 
+def setup_sqlite_types():
+    def adapt_float_array(array):
+        return '{:.2f} {:.2f} {:.2f} {:.2f}'.format(*array).encode('ascii')
+
+    def adapt_int_array(array):
+        return '{:d} {:d} {:d} {:d}'.format(*array).encode('ascii')
+
+    def convert_float_array(string):
+        return list(map(float,string.split(b" ")))
+
+    def convert_int_array(string):
+        return list(map(int,string.split(b" ")))
+
+    sqlite3.register_adapter(ctypes.c_uint8 * 4, adapt_int_array)
+    sqlite3.register_adapter(ctypes.c_uint16 * 4, adapt_int_array)
+    sqlite3.register_converter('int_array', convert_int_array)
+
+    sqlite3.register_adapter(ctypes.c_float * 4, adapt_float_array)
+    sqlite3.register_converter('float_array', convert_float_array)
+    
 def main():
     conn = SQLiteConnect()
     conn.open()
