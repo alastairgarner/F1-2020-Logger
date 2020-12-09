@@ -85,16 +85,13 @@ Further examples of how to retrieve data from the SQLite database, see the 'retr
 
 Below is the proposed schema for the sqlite database. In brief, there are three primary tables through which all other tables can be linked:
 
-**sessions:** One entry for each session recorded (practice/quali/race etc).
-
-**packets:** One entry for each packet processed by the record.
-
+**sessions:** One entry for each session recorded (practice/quali/race etc). \
+**packets:** One entry for each packet processed by the record. \
 **participants:** 22 entries for each session, listing the participants in the session.
 
 From this, two fields are predominantly used as the joint primary keys, identifying a single driver for a single frame.
 
-**packetUID:** Unique packet identifer, which is unique for a given session.
-
+**packetUID:** Unique packet identifer, which is unique for a given session. \
 **vehicleId:** The unique vehicle identifier (0-21), which is consistent across all packets for a given session. They are not consistent across different sessions.
 
 
