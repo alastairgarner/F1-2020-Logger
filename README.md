@@ -15,8 +15,16 @@ This package is a work in progress and was meant as a good excuse to learn some 
 
 
 
-[TOC]
-
+## Table of contents
+- [F1 2020 Telemetry Recorder](#f1-2020-telemetry-recorder)
+  - [Table of contents](#table-of-contents)
+  - [Dependencies](#dependencies)
+  - [Usage](#usage)
+    - [Recording data](#recording-data)
+    - [Retrieving data](#retrieving-data)
+  - [Database schema](#database-schema)
+  - [Other](#other)
+  - [Writing python packages](#writing-python-packages)
 
 ---
 
