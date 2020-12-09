@@ -6,7 +6,7 @@ The f1-2020-db package allows users to capture, unpack and save telemetry broadc
 
 
 
-Much of the code for parsing the packets has been adapted from the excellent package, [f1-2020-telemetry](https://gitlab.com/gparent/f1-2020-telemetry), written by Guillaume Parent, to whom I owe my thanks.
+Much of the code for parsing the packets has been adapted from the excellent package, [f1-2020-telemetry](https://f1-2020-telemetry.readthedocs.io/en/latest/), written by Guillaume Parent, to whom I owe my thanks.
 
 
 
@@ -15,20 +15,6 @@ This package is a work in progress and was meant as a good excuse to learn some 
 
 
 [TOC]
-
-
----
-
-## Usage
-
-
-
-### Recording data
-
-
-### Retrieving data
-
-The data can be accessed using standard SQL queries, or at least those supported by [SQLite](https://sqlite.org/lang.html).
 
 
 ---
@@ -43,6 +29,54 @@ The data can be accessed using standard SQL queries, or at least those supported
 **Plotting**
 - matplotlib
 - scipy (for interpolation)
+
+
+---
+
+## Usage
+
+
+
+### Recording data
+
+Command line utility to be added
+
+### Retrieving data
+
+The data can be accessed using standard SQL queries, or at least those supported by [SQLite](https://sqlite.org/lang.html). These can be implemented in python as follows:
+
+```python
+# Import dependencies
+import sqlite3
+from f1_2020_db import setup_sqlite_types
+
+# Initialise custom data types
+setup_sqlite_types()
+
+# Connect to database
+filename = "f1-2020.sqlite3"
+conn = sqlite3.connect(filename, detect_types=sqlite3.PARSE_DECLTYPES)
+
+# Define SQL query (get list of sessions)
+query = """
+    SELECT *
+    FROM session;
+"""
+
+# Execute query
+cursor = conn.execute(get_sessions)
+columns = list(zip(*cursor.description))[0] # Extract column names
+data = cursor.fetchall()
+
+# Create a Dataframe containing the results
+sessions = pd.DataFrame(data=data, columns=columns)
+print(sessions)
+
+# Save session list to csv
+sessions.to_csv("./session_list.csv", index=False)
+```
+
+Further examples of how to retrieve data from the SQLite database, see the 'retrieval_demo.py' file.
 
 ---
 
@@ -77,4 +111,10 @@ def function(inp):
         print(i)
 ```
 
-[Writing python packages](https://code.tutsplus.com/tutorials/how-to-write-package-and-distribute-a-library-in-python--cms-28693)
+## Writing python packages
+
+[Tutorial](https://code.tutsplus.com/tutorials/how-to-write-package-and-distribute-a-library-in-python--cms-28693)
+
+- [setuptools docs](https://setuptools.readthedocs.io/en/latest/userguide/quickstart.html)
+- [Panflute example](https://github.com/sergiocorreia/panflute/blob/master/setup.py)
+- [f1-2020-telem example](https://gitlab.com/gparent/f1-2020-telemetry/-/blob/master/setup.py)
