@@ -1,6 +1,7 @@
 # F1 2020 Telemetry Recorder
 
-[![Python version](https://img.shields.io/badge/python-3.8-blue?style=flat-square)]()
+[![Python version](https://img.shields.io/badge/python-3.8-green?style=flat-square)]()
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)]()
 
 The f1-2020-db package allows users to capture, unpack and save telemetry broadcast by the F1 2020 videogame to an SQLite database. It is designed with post-race analysis in mind, with a database structure that allows specific data to be queried within or across sessions.
 
@@ -85,12 +86,15 @@ Further examples of how to retrieve data from the SQLite database, see the 'retr
 Below is the proposed schema for the sqlite database. In brief, there are three primary tables through which all other tables can be linked:
 
 **sessions:** One entry for each session recorded (practice/quali/race etc).
+
 **packets:** One entry for each packet processed by the record.
+
 **participants:** 22 entries for each session, listing the participants in the session.
 
 From this, two fields are predominantly used as the joint primary keys, identifying a single driver for a single frame.
 
 **packetUID:** Unique packet identifer, which is unique for a given session.
+
 **vehicleId:** The unique vehicle identifier (0-21), which is consistent across all packets for a given session. They are not consistent across different sessions.
 
 
