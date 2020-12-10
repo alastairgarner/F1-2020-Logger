@@ -8,7 +8,7 @@ from queue import Queue
 
 from f1_2020_telemetry.types import (TeamIDs, TrackIDs, ButtonFlag, InfringementTypes, NationalityIDs, PenaltyTypes, SurfaceTypes)
 
-from .types import TableID,DriverIDs
+from ..types import TableID,DriverIDs
 
 #
 class DbHandler(threading.Thread):

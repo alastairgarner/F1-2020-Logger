@@ -8,7 +8,7 @@ from queue import Queue
 from collections import namedtuple
 
 from f1_2020_telemetry.packets import unpack_udp_packet
-from .packet_utils import PacketParser
+from .utils.packet import PacketParser
 
 class PacketReceiver(threading.Thread):
     """ 

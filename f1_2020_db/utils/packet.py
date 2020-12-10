@@ -1,15 +1,13 @@
 #! /usr/bin/env python3
 
 import os
-import time
 import datetime
 import sqlite3
-import threading
 from queue import Queue
 
 from f1_2020_telemetry.packets import PacketID
 
-from .sqlite_utils import TableID, EntryFields
+from .sqlite import TableID, EntryFields
 
 class Session(object):
     """Contains details on the current session"""

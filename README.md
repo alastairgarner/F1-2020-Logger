@@ -93,12 +93,12 @@ Below is the proposed schema for the sqlite database. In brief, there are three 
 
 **sessions:** One entry for each session recorded (practice/quali/race etc). \
 **packets:** One entry for each packet processed by the record. \
-**participants:** 22 entries for each session, listing the participants in the session.
+**participants:** 22 entries for each session, listing the participants in the session. \
 
 From this, two fields are predominantly used as the joint primary keys, identifying a single driver for a single frame.
 
 **packetUID:** Unique packet identifer, which is unique for a given session. \
-**vehicleId:** The unique vehicle identifier (0-21), which is consistent across all packets for a given session. They are not consistent across different sessions.
+**vehicleId:** The unique vehicle identifier (0-21), which is consistent across all packets for a given session. They are not consistent across different sessions. \
 
 
 ![](./img/F1-db-schema.svg)

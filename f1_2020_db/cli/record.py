@@ -1,13 +1,18 @@
 #! /usr/bin/env python3
 
+"""
+
+"""
+
+
 ################################################
 # Load Dependencies
 ################################################
 
-import time
 from queue import Queue
 
-from f1_2020_db import DbHandler, PacketParser, Session, PacketReceiver
+from ..utils import DbHandler, PacketParser, Session
+from ..receiver import PacketReceiver
 
 ################################################
 # Functions
@@ -21,9 +26,9 @@ def main():
     receiver.connect()
     db = DbHandler("f1-2020.sqlite3",db_queue)
 
+    # Determine what the sessionSID should be
     session.get_last_session("f1-2020.sqlite3")
 
-    # Determine what the sessionSID should be
     receiver.start()
     db.start()
         
