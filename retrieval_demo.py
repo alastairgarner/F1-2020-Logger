@@ -39,6 +39,9 @@ data = res.fetchall()
 sessions = pd.DataFrame(data=data, columns=columns)
 print(sessions)
 
+# Print to csv
+sessions.to_csv("./session_list.csv", index=False)
+
 # Get most recent session SID
 last_session = sessions.iloc[-1]['sessionSID']
 

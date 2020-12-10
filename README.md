@@ -23,8 +23,6 @@ This package is a work in progress and was meant as a good excuse to learn some 
     - [Recording data](#recording-data)
     - [Retrieving data](#retrieving-data)
   - [Database schema](#database-schema)
-  - [Other](#other)
-  - [Writing python packages](#writing-python-packages)
 
 ---
 
@@ -63,7 +61,7 @@ from f1_2020_db import setup_sqlite_types
 setup_sqlite_types()
 
 # Connect to database
-filename = "f1-2020.sqlite3"
+filename = "./f1-2020.sqlite3"
 conn = sqlite3.connect(filename, detect_types=sqlite3.PARSE_DECLTYPES)
 
 # Define SQL query (get list of sessions)
@@ -109,21 +107,3 @@ From this, two fields are predominantly used as the joint primary keys, identify
 The proposed schema is not yet fully implemented in the package. However, some of key tables (primary tables, lapdata & cartelemetry) are.
 
 ---
-
-## Other
-
-```python
-def function(inp):
-    """Docstring"""
-    
-    for i in range(inp):
-        print(i)
-```
-
-## Writing python packages
-
-[Tutorial](https://code.tutsplus.com/tutorials/how-to-write-package-and-distribute-a-library-in-python--cms-28693)
-
-- [setuptools docs](https://setuptools.readthedocs.io/en/latest/userguide/quickstart.html)
-- [Panflute example](https://github.com/sergiocorreia/panflute/blob/master/setup.py)
-- [f1-2020-telem example](https://gitlab.com/gparent/f1-2020-telemetry/-/blob/master/setup.py)
