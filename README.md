@@ -16,13 +16,13 @@ This package is a work in progress and was meant as a good excuse to learn some 
 
 
 ## Table of contents
-- [F1 2020 Telemetry Recorder](#f1-2020-telemetry-recorder)
   - [Table of contents](#table-of-contents)
   - [Dependencies](#dependencies)
   - [Usage](#usage)
     - [Recording data](#recording-data)
     - [Retrieving data](#retrieving-data)
   - [Database schema](#database-schema)
+  - [Example figues](#example-figures)
 
 ---
 
@@ -107,3 +107,15 @@ From this, two fields are predominantly used as the joint primary keys, identify
 The proposed schema is not yet fully implemented in the package. However, some of key tables (primary tables, lapdata & cartelemetry) are.
 
 ---
+
+## Example Figures
+
+Below are just a couple of examples of the kind of post race analysis/visualisations that can be generated from the telemetry database.
+
+A figure showing the change in position across the duration of a race.
+
+![](./img/mexi_pos_change.png)
+
+A figure showing the distribution of lap times posted by each driver during a race.
+
+![](./img/mexi_laptimes.png)
